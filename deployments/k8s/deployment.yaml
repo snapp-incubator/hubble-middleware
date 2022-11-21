@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hubble-middleware
+  name: hubble-middleware
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hubble-middleware
+  strategy: { }
+  template:
+    metadata:
+      labels:
+        app: hubble-middleware
+    spec:
+      containers:
+        - image: hubble-middleware:6.2.6
+          name: hubble-middleware
+          ports:
+            - containerPort: 1381
+          resources: { }

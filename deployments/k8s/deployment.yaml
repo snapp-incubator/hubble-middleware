@@ -22,3 +22,11 @@ spec:
           ports:
             - containerPort: 1381
           resources: { }
+          volumeMounts:
+            - mountPath: /app/config.yml
+              subPath: config.yml
+              name: config-map
+      volumes:
+        - name: config-map
+          configMap:
+            name: hubble-middleware-config

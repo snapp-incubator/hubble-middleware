@@ -17,7 +17,8 @@ spec:
         app: hubble-middleware
     spec:
       containers:
-        - image: hubble-middleware:6.2.6
+        - image: registry.okd4.teh-1.snappcloud.io/public/hubble-middleware:v1.0.0
+          imagePullPolicy: Always
           name: hubble-middleware
           ports:
             - containerPort: 1381

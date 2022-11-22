@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -58,7 +59,7 @@ func (h *ProjectHandler) getProjects(username string) ([]string, error) {
 		return nil, err
 	}
 
-	res, err := projectClientset.Projects().List(metav1.ListOptions{})
+	res, err := projectClientset.Projects().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

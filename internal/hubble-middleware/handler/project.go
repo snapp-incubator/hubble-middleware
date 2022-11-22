@@ -34,6 +34,7 @@ func NewProject(k8s *rest.Config) *ProjectHandler {
 func (h *ProjectHandler) Get(c echo.Context) error {
 	user, ok := c.Get("user").(*jwt.Token)
 	if !ok {
+		log.Error("Unauthorized user")
 		return echo.ErrUnauthorized
 	}
 

@@ -10,7 +10,7 @@ COPY . .
 
 WORKDIR /app/cmd
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /app .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /hubble-middleware .
 
 #Second stage of build
 FROM alpine:latest
@@ -19,8 +19,8 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /app/
 
-COPY --from=build /app .
+COPY --from=build /hubble-middleware .
 
 EXPOSE 1381
 
-CMD ["./app", "api"]
+CMD ["./hubble-middleware", "api"]

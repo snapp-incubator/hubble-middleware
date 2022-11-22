@@ -16,6 +16,8 @@ spec:
       labels:
         app: hubble-middleware
     spec:
+      serviceAccount: 'hubble-middleware'
+      serviceAccountName: 'hubble-middleware'
       containers:
         - image: registry.okd4.teh-1.snappcloud.io/public/hubble-middleware:v1.0.0
           imagePullPolicy: Always

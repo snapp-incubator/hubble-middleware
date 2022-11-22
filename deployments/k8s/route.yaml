@@ -1,0 +1,18 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: hubble-middleware
+  namespace: kube-system
+  labels:
+    router: private
+spec:
+  host: hubble-middleware.apps.private.{{ .Values.region_hostname }}
+  port:
+    targetPort: http
+  to:
+    kind: Service
+    name: hubble-middleware-service
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

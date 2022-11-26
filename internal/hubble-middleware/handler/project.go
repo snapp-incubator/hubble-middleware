@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"gitlab.snapp.ir/snappcloud/hubble-middleware/internal/auth"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -32,22 +33,20 @@ func NewProject(k8s *rest.Config) *ProjectHandler {
 }
 
 func (h *ProjectHandler) Get(c echo.Context) error {
-	user, ok := c.Get("user").(*jwt.Token)
+	user, ok := c.Get("user").(auth.User)
 	if !ok {
 		log.Error("Unauthorized user")
 		return echo.ErrUnauthorized
 	}
 
-	claims := user.Claims.(*jwtCustomClaims)
-
-	projects, err := h.getProjects(claims.Username)
+	projects, err := h.getProjects(user.Username)
 	if err != nil {
 		log.Errorf("Get Projects Error: %s", err)
 		return echo.ErrInternalServerError
 	}
 
 	return c.JSON(http.StatusOK, resp.User{
-		Username: claims.Username,
+		Username: user.Username,
 		Projects: projects,
 	})
 }

@@ -3,12 +3,14 @@ package api
 import (
 	"errors"
 	"fmt"
+	"gitlab.snapp.ir/snappcloud/hubble-middleware/internal/auth"
 	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"syscall"
 
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"gitlab.snapp.ir/snappcloud/hubble-middleware/internal/hubble-middleware/handler"
 	"k8s.io/client-go/rest"
@@ -20,6 +22,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+type Claims struct {
+	Username string
+	Iat      int64
+	Exp      int64
+}
 
 func main(cfg config.Config) {
 	app := echo.New()
@@ -33,7 +41,25 @@ func main(cfg config.Config) {
 	projectsHandler := handler.NewProject(clusterConfig)
 
 	app.GET("/healthz", func(c echo.Context) error { return c.NoContent(http.StatusNoContent) })
-	app.GET("/projects", projectsHandler.Get)
+
+	projects := app.Group("/projects")
+
+	projects.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
+		KeyLookup:  "header:" + echo.HeaderAuthorization,
+		AuthScheme: "Bearer",
+		Validator: func(token string, c echo.Context) (bool, error) {
+			user, err := auth.Validate(token, cfg.Dex.Secret)
+			if err != nil {
+				return false, err
+			}
+
+			c.Set("user", user)
+
+			return true, nil
+
+		},
+	}))
+	projects.GET("", projectsHandler.Get)
 
 	if err := app.Start(fmt.Sprintf(":%d", cfg.API.Port)); !errors.Is(err, http.ErrServerClosed) {
 		logrus.Fatalf("echo initiation failed: %s", err)

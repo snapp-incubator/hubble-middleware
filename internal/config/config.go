@@ -20,10 +20,15 @@ type (
 	// Config holds all configurations.
 	Config struct {
 		API API `koanf:"api"`
+		Dex Dex `koanf:"dex"`
 	}
 
 	API struct {
 		Port int `koanf:"port"`
+	}
+
+	Dex struct {
+		Secret string `koanf:"secret"`
 	}
 )
 

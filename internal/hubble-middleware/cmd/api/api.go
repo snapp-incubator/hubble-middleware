@@ -40,6 +40,12 @@ func main(cfg config.Config) {
 
 	projectsHandler := handler.NewProject(clusterConfig)
 
+	app.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodHead,
+			http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+	}))
+
 	app.GET("/healthz", func(c echo.Context) error { return c.NoContent(http.StatusNoContent) })
 
 	projects := app.Group("/projects")

@@ -24,10 +24,6 @@ import (
 func main(cfg config.Config) {
 	app := echo.New()
 
-	if err := app.Start(fmt.Sprintf(":%d", cfg.API.Port)); !errors.Is(err, http.ErrServerClosed) {
-		logrus.Fatalf("echo initiation failed: %s", err)
-	}
-
 	clusterConfig, err := getClusterConfig()
 	if err != nil {
 		log.Errorf("", err)
@@ -36,10 +32,14 @@ func main(cfg config.Config) {
 
 	projectsHandler := handler.NewProject(clusterConfig)
 
-	logrus.Println("API has been started :D")
-
 	app.GET("/healthz", func(c echo.Context) error { return c.NoContent(http.StatusNoContent) })
 	app.GET("/projects", projectsHandler.Get)
+
+	if err := app.Start(fmt.Sprintf(":%d", cfg.API.Port)); !errors.Is(err, http.ErrServerClosed) {
+		logrus.Fatalf("echo initiation failed: %s", err)
+	}
+
+	logrus.Println("API has been started :D")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

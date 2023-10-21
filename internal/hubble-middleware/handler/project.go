@@ -4,6 +4,7 @@ import (
 	"context"
 	"gitlab.snapp.ir/snappcloud/hubble-middleware/internal/auth"
 	"net/http"
+	"slices"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -13,6 +14,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	projectv1 "github.com/openshift/client-go/project/clientset/versioned/typed/project/v1"
+	groupv1 "github.com/openshift/client-go/user/clientset/versioned/typed/user/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -39,7 +41,13 @@ func (h *ProjectHandler) Get(c echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
-	projects, err := h.getProjects(user.Username)
+	groups, err := h.getUserGroups(user.Username)
+	if err != nil {
+		log.Errorf("Get Groups Error: %s", err)
+		return echo.ErrInternalServerError
+	}
+
+	projects, err := h.getUserProjects(user.Username, groups)
 	if err != nil {
 		log.Errorf("Get Projects Error: %s", err)
 		return echo.ErrInternalServerError
@@ -51,8 +59,13 @@ func (h *ProjectHandler) Get(c echo.Context) error {
 	})
 }
 
-func (h *ProjectHandler) getProjects(username string) ([]string, error) {
+func (h *ProjectHandler) getUserProjects(username string, groups []string) ([]string, error) {
 	h.k8sClusterConfig.Impersonate.UserName = username
+
+	if groups != nil && len(groups) > 0 {
+		h.k8sClusterConfig.Impersonate.Groups = groups
+	}
+
 	projectClientset, err := projectv1.NewForConfig(h.k8sClusterConfig)
 	if err != nil {
 		logrus.Error(err)
@@ -71,4 +84,26 @@ func (h *ProjectHandler) getProjects(username string) ([]string, error) {
 	}
 
 	return projects, err
+}
+
+func (h *ProjectHandler) getUserGroups(username string) ([]string, error) {
+	groupClientset, err := groupv1.NewForConfig(h.k8sClusterConfig)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	res, err := groupClientset.Groups().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	groups := []string{}
+	for _, item := range res.Items {
+		if slices.Contains(item.Users, username) {
+			groups = append(groups, item.ObjectMeta.Name)
+		}
+	}
+
+	return groups, err
 }

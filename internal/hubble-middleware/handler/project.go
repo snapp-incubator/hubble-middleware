@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"github.com/sirupsen/logrus"
@@ -21,12 +20,6 @@ import (
 type (
 	ProjectHandler struct {
 		k8sClusterConfig *rest.Config
-	}
-
-	jwtCustomClaims struct {
-		jwt.Claims
-
-		Username string `json:"username"`
 	}
 )
 
@@ -62,7 +55,7 @@ func (h *ProjectHandler) Get(c echo.Context) error {
 func (h *ProjectHandler) getUserProjects(username string, groups []string) ([]string, error) {
 	h.k8sClusterConfig.Impersonate.UserName = username
 
-	if groups != nil && len(groups) > 0 {
+	if len(groups) > 0 {
 		h.k8sClusterConfig.Impersonate.Groups = groups
 	}
 

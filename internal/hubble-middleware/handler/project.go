@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"gitlab.snapp.ir/snappcloud/hubble-middleware/internal/auth"
 	"net/http"
 	"slices"
@@ -76,6 +77,7 @@ func (h *ProjectHandler) getUserProjects(username string, groups []string) ([]st
 		projects = append(projects, item.ObjectMeta.Name)
 	}
 
+	fmt.Printf("projects: %+v\n", projects)
 	return projects, err
 }
 
@@ -98,5 +100,6 @@ func (h *ProjectHandler) getUserGroups(username string) ([]string, error) {
 		}
 	}
 
+	fmt.Printf("groups: %+v\n", groups)
 	return groups, err
 }

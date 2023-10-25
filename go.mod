@@ -1,6 +1,6 @@
 module gitlab.snapp.ir/snappcloud/hubble-middleware
 
-go 1.19
+go 1.21
 
 require (
 	github.com/golang-jwt/jwt/v4 v4.2.0

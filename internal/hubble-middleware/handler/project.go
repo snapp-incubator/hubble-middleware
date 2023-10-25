@@ -58,6 +58,8 @@ func (h *ProjectHandler) getUserProjects(username string, groups []string) ([]st
 
 	if len(groups) > 0 {
 		h.k8sUserConfig.Impersonate.Groups = groups
+	} else {
+		h.k8sUserConfig.Impersonate.Groups = []string{}
 	}
 
 	projectClientset, err := projectv1.NewForConfig(&h.k8sUserConfig)

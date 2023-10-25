@@ -38,7 +38,7 @@ func main(cfg config.Config) {
 		os.Exit(1)
 	}
 
-	projectsHandler := handler.NewProject(clusterConfig)
+	projectsHandler := handler.NewProject(*clusterConfig)
 
 	app.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},

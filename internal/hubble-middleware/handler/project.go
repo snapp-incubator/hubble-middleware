@@ -19,12 +19,13 @@ import (
 
 type (
 	ProjectHandler struct {
-		k8sClusterConfig *rest.Config
+		k8sUserConfig rest.Config
+		k8sAppConfig  rest.Config
 	}
 )
 
-func NewProject(k8s *rest.Config) *ProjectHandler {
-	return &ProjectHandler{k8sClusterConfig: k8s}
+func NewProject(k8s rest.Config) *ProjectHandler {
+	return &ProjectHandler{k8sUserConfig: k8s, k8sAppConfig: k8s}
 }
 
 func (h *ProjectHandler) Get(c echo.Context) error {
@@ -53,13 +54,13 @@ func (h *ProjectHandler) Get(c echo.Context) error {
 }
 
 func (h *ProjectHandler) getUserProjects(username string, groups []string) ([]string, error) {
-	h.k8sClusterConfig.Impersonate.UserName = username
+	h.k8sUserConfig.Impersonate.UserName = username
 
 	if len(groups) > 0 {
-		h.k8sClusterConfig.Impersonate.Groups = groups
+		h.k8sUserConfig.Impersonate.Groups = groups
 	}
 
-	projectClientset, err := projectv1.NewForConfig(h.k8sClusterConfig)
+	projectClientset, err := projectv1.NewForConfig(&h.k8sUserConfig)
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
@@ -80,7 +81,7 @@ func (h *ProjectHandler) getUserProjects(username string, groups []string) ([]st
 }
 
 func (h *ProjectHandler) getUserGroups(username string) ([]string, error) {
-	groupClientset, err := groupv1.NewForConfig(h.k8sClusterConfig)
+	groupClientset, err := groupv1.NewForConfig(&h.k8sAppConfig)
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
